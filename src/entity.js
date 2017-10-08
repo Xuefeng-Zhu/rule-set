@@ -2,48 +2,45 @@ module.exports = class Entity {
   constructor(name) {
     this.name = name;
     this.dependents = {};
+    this.dependencies = {};
     this.conflicts = {};
   }
 
-  addDependent(dependent) {
-    this.dependents[dependent.name] = dependent;
+  addDependent(dependentObj) {
+    this.dependents[dependentObj.name] = dependentObj;
   }
 
-  addConflict(conflict) {
-    this.conflicts[conflict.name] = conflict;
+  addDependence(dependenceObj) {
+    this.dependencies[dependenceObj.name] = dependenceObj;
   }
 
-  isCoherent() {
-    const dependentSet = this.getDependentSet();
-    const conflictSet = this.getConflictSet();
-    const conflicts = Object.keys(conflictSet);
+  addConflict(conflictObj) {
+    this.conflicts[conflictObj.name] = conflictObj;
+  }
 
-    for (let i = 0; i < conflicts.length; i++) {
-      if (dependentSet[conflicts[i]]) {
-        return false;
-      }
-    }
-
-    return true;
+  getDependenceSet() {
+    return this.getEntitySet('dependencies');
   }
 
   getDependentSet() {
-    const dependentSet = Object.assign({}, this.dependents);
-
-    Object.values(this.dependents).forEach((dependent) => {
-      Object.assign(dependentSet, dependent.getDependentSet());
-    });
-
-    return dependentSet;
+    return this.getEntitySet('dependents', 'dependents');
   }
 
   getConflictSet() {
-    const conflictSet = Object.assign({}, this.conflicts);
+    return this.getEntitySet('conflicts');
+  }
 
-    Object.values(this.dependents).forEach((dependent) => {
-      Object.assign(conflictSet, dependent.getConflictSet());
-    });
+  getEntitySet(type, interator = 'dependencies') {
+    if (this.visited) return {};
 
-    return conflictSet;
+    this.visited = true;
+    const result = Object.assign({}, this[type]);
+
+    for (const item of Object.keys(this[interator])) {
+      Object.assign(result, this[interator][item].getEntitySet(type));
+    }
+
+    this.visited = false;
+    return result;
   }
 };

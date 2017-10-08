@@ -71,7 +71,6 @@ console.assert(setsEqual(selected, set('a', 'c', 'b')));
 s = dependsOn('f', 'f', s);
 selected = toggle(selected, 'f', s);
 console.assert(setsEqual(selected, set('a', 'c', 'b', 'f')));
-
 selected = toggle(selected, 'e', s);
 console.assert(setsEqual(selected, set('e', 'f')));
 

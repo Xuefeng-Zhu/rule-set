@@ -22,8 +22,12 @@ module.exports = class RuleSet {
     const entityObj0 = this.getEntityObj(entity0);
     const entityObj1 = this.getEntityObj(entity1);
 
-    entityObj0.addDependent(entityObj1);
-    delete this.sources[entity1];
+    entityObj0.addDependence(entityObj1);
+    entityObj1.addDependent(entityObj0);
+
+    if (!entityObj1.getDependenceSet()[entity0]) {
+      delete this.sources[entity1];
+    }
   }
 
   addConflict(entity0, entity1) {
@@ -35,11 +39,15 @@ module.exports = class RuleSet {
   }
 
   isCoherent() {
-    const sources = Object.keys(this.sources);
-    for (let i = 0; i < sources.length; i++) {
-      const sourceObj = this.sources[sources[i]];
-      if (!sourceObj.isCoherent()) {
-        return false;
+    for (const source of Object.keys(this.sources)) {
+      const sourceObj = this.sources[source];
+      const dependenceSet = sourceObj.getDependenceSet();
+      const conflictSet = sourceObj.getConflictSet();
+
+      for (const conflict of Object.keys(conflictSet)) {
+        if (dependenceSet[conflict]) {
+          return false;
+        }
       }
     }
 
